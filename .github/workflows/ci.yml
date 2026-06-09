@@ -42,6 +42,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify prefs keys are resolved in build output
+        run: |
+          grep -qF 'extensions.zotero.zoteroscidb.endpoint' build/addon/prefs.js
+          if grep -rqF '${addonRef}' build/addon; then
+            echo "::error::Unresolved \${addonRef} placeholder found in build output"
+            exit 1
+          fi
+
   integration:
     name: In-Zotero integration tests (non-blocking)
     runs-on: ubuntu-latest
