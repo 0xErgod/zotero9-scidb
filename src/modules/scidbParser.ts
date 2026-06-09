@@ -95,8 +95,9 @@ export function resolvePdfUrl(raw: string, pageUrl: string): string {
 
   if (pdfUrl.startsWith("//")) {
     pdfUrl = "https:" + pdfUrl;
-  } else if (pdfUrl.startsWith("http:")) {
-    pdfUrl = pdfUrl.replace(/^http:/, "https:");
+  } else if (/^http:\/\//i.test(pdfUrl)) {
+    // Case-insensitive so an uppercase `HTTP://` is also upgraded.
+    pdfUrl = pdfUrl.replace(/^http:\/\//i, "https://");
   }
 
   return pdfUrl;

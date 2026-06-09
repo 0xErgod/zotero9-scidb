@@ -137,6 +137,12 @@ describe("resolvePdfUrl", () => {
     );
   });
 
+  it("upgrades an uppercase HTTP scheme to https", () => {
+    expect(resolvePdfUrl("HTTP://host.tld/x.pdf", page)).toBe(
+      "https://host.tld/x.pdf",
+    );
+  });
+
   it("leaves an absolute https URL intact (minus fragment)", () => {
     expect(resolvePdfUrl("https://host.tld/x.pdf#a", page)).toBe(
       "https://host.tld/x.pdf",
