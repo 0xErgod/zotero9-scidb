@@ -36,6 +36,16 @@ export default defineConfig({
     ],
   },
 
+  // In-Zotero integration tests (run with `npm run test:zotero`). The runner
+  // boots a real Zotero, loads the plugin, then executes test/*.spec.ts inside
+  // it. headless/watch default to true in CI.
+  test: {
+    entries: ["test"],
+    // Wait until the plugin has fully started before running specs. In CI
+    // `watch` defaults to false, so Zotero exits when the run completes.
+    waitForPlugin: `() => !!Zotero.${pkg.config.addonInstance}?.data.alive`,
+  },
+
   // If you need to see a more detailed log, uncomment the following line:
   // logLevel: "trace",
 });

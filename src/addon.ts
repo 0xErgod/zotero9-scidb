@@ -1,8 +1,8 @@
 import { config } from "../package.json";
-import { ColumnOptions } from "zotero-plugin-toolkit/dist/helpers/virtualizedTable";
-import { DialogHelper } from "zotero-plugin-toolkit/dist/helpers/dialog";
+import { ColumnOptions, DialogHelper } from "zotero-plugin-toolkit";
 import hooks from "./hooks";
 import { createZToolkit } from "./utils/ztoolkit";
+import * as scidbParser from "./modules/scidbParser";
 
 class Addon {
   public data: {
@@ -23,8 +23,9 @@ class Addon {
   };
   // Lifecycle hooks
   public hooks: typeof hooks;
-  // APIs
-  public api: object;
+  // APIs. The pure parser helpers are exposed so the in-Zotero test suite can
+  // exercise them against a real DOM (see test/scidb.spec.ts).
+  public api: { parser: typeof scidbParser };
 
   constructor() {
     this.data = {
@@ -34,7 +35,7 @@ class Addon {
       ztoolkit: createZToolkit(),
     };
     this.hooks = hooks;
-    this.api = {};
+    this.api = { parser: scidbParser };
   }
 }
 

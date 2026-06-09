@@ -18,7 +18,7 @@ export async function registerPrefsScripts(_window: Window) {
     addon.data.prefs = {
       window: _window,
       columns: [], // Empty columns since we don't use the table
-      rows: []     // Empty rows since we don't use the table
+      rows: [], // Empty rows since we don't use the table
     } as PrefsData;
   } else {
     addon.data.prefs.window = _window;
@@ -29,16 +29,17 @@ export async function registerPrefsScripts(_window: Window) {
 
 async function updatePrefsUI() {
   if (!addon.data.prefs?.window) return;
-  
+
   // Get the current endpoint value
   const prefKey = `extensions.zotero.${config.addonRef}.endpoint`;
-  const currentEndpoint = (Zotero.Prefs.get(prefKey) as string) || "https://sci-hub.usualwant.com/";
-  
+  const currentEndpoint =
+    (Zotero.Prefs.get(prefKey) as string) || "https://sci-hub.usualwant.com/";
+
   // Set the input value
   const input = addon.data.prefs.window.document.querySelector(
-    `#zotero-prefpane-${config.addonRef}-endpoint`
+    `#zotero-prefpane-${config.addonRef}-endpoint`,
   ) as HTMLInputElement;
-  
+
   if (input) {
     input.value = currentEndpoint;
   }
@@ -49,7 +50,7 @@ function bindPrefEvents() {
 
   const prefKey = `extensions.zotero.${config.addonRef}.endpoint`;
   const input = addon.data.prefs.window.document.querySelector(
-    `#zotero-prefpane-${config.addonRef}-endpoint`
+    `#zotero-prefpane-${config.addonRef}-endpoint`,
   ) as HTMLInputElement;
 
   if (input) {

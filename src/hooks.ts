@@ -40,7 +40,7 @@ async function onMainWindowLoad(win: Window): Promise<void> {
 
   // Register SciDB context menu
   const scidbManager = SciDBManager.getInstance();
-  scidbManager.registerRightClickMenuItem();
+  scidbManager.registerRightClickMenuItem(win);
 }
 
 async function onMainWindowUnload(win: Window): Promise<void> {
@@ -51,7 +51,7 @@ function onShutdown(): void {
   ztoolkit.unregisterAll();
   // Remove addon object
   addon.data.alive = false;
-  delete Zotero[addon.data.config.addonInstance];
+  delete (Zotero as any)[addon.data.config.addonInstance];
 }
 
 async function onNotify(
