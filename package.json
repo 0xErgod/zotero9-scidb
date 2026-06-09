@@ -7,7 +7,7 @@
     "addonID": "zotero9-scidb@dev.null",
     "addonRef": "zoteroscidb",
     "addonInstance": "ZoteroSciDB",
-    "prefsPrefix": "extensions.zotero.${addonRef}"
+    "prefsPrefix": "extensions.zotero.zoteroscidb"
   },
   "repository": {
     "type": "git",
