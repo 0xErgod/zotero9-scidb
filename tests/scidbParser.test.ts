@@ -192,7 +192,9 @@ describe("downloadFailureMessage", () => {
   });
 
   it("reports the HTTP status for other status codes", () => {
-    expect(downloadFailureMessage("P", { status: 500 })).toContain("HTTP 500");
+    const msg = downloadFailureMessage("P", { status: 500 });
+    expect(msg).toContain("HTTP 500");
+    expect(msg).not.toContain("captcha");
   });
 
   it("falls back to the error message when there is no status", () => {
