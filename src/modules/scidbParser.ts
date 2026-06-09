@@ -21,14 +21,24 @@ export interface HtmlDocLike {
  * Scrape a PDF URL out of raw page markup. Sci-Hub's current layout only
  * exposes the canonical path inside inline JavaScript (e.g.
  * `url: '/storage/2024/.../paper.pdf'`), so a serialized-HTML regex is the most
- * reliable fallback. Ordered most-specific first.
+ * reliable fallback.
+ *
+ * Each pattern matches a quoted URL whose path ends in `.pdf`, optionally
+ * followed by a query (`?...`) or fragment (`#...`). Requiring `.pdf` to
+ * *terminate the path* (the next character is a quote, `?`, or `#`) avoids
+ * false positives such as a CSS/SVG asset `sprite.pdf.svg` or a query value
+ * `lib.js?v=2.pdf`. The canonical sci-hub `/storage/` path is preferred so a
+ * decoy asset URL elsewhere on the page can't outrank the real document.
  */
 export function extractPdfUrlFromHtml(html: string): string | null {
+  const ref = (prefix: string) =>
+    // `[^"'?]` before `.pdf` keeps the extension in the path, not a query value.
+    new RegExp(`["'](${prefix}[^"'?]*?\\.pdf(?:[?#][^"']*)?)["']`, "i");
   const patterns = [
-    /["'](https?:\/\/[^"']+?\.pdf[^"']*)["']/i, // absolute
-    /["'](\/\/[^"']+?\.pdf[^"']*)["']/i, // protocol-relative
-    /["'](\/storage\/[^"']+?\.pdf[^"']*)["']/i, // sci-hub storage path
-    /["'](\/[^"']+?\.pdf[^"']*)["']/i, // any root-relative .pdf
+    ref("\\/storage\\/"), // sci-hub canonical storage path (preferred)
+    ref("https?:\\/\\/"), // absolute
+    ref("\\/\\/"), // protocol-relative
+    ref("\\/"), // any other root-relative .pdf
   ];
   for (const re of patterns) {
     const m = html.match(re);
@@ -75,7 +85,10 @@ export function extractPdfUrl(
 export function resolvePdfUrl(raw: string, pageUrl: string): string {
   let pdfUrl = raw.split("#")[0];
 
-  if (!pdfUrl.startsWith("http") && !pdfUrl.startsWith("//")) {
+  // Resolve against the page origin unless it already has a scheme or is
+  // protocol-relative. Test for an actual scheme (`https://`) rather than a
+  // `"http"` prefix, so a relative path like `httpfile.pdf` still resolves.
+  if (!/^https?:\/\//i.test(pdfUrl) && !pdfUrl.startsWith("//")) {
     const origin = new URL(pageUrl).origin;
     pdfUrl = new URL(pdfUrl, origin).href;
   }

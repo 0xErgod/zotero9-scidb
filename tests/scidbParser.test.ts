@@ -47,8 +47,34 @@ describe("extractPdfUrlFromHtml", () => {
     );
   });
 
-  it("prefers an absolute URL over a relative one", () => {
-    const html = `<a href="/local/a.pdf"></a><script>var u="https://host.tld/abs.pdf"</script>`;
+  it("prefers the /storage/ path over a decoy asset URL", () => {
+    const html = `<style>.x{background:url('https://cdn.tld/sprite.pdf.svg')}</style><script>var u='/storage/real/paper.pdf'</script>`;
+    expect(extractPdfUrlFromHtml(html)).toBe("/storage/real/paper.pdf");
+  });
+
+  it("does not match a .pdf that is not a path extension", () => {
+    // CSS/SVG asset — `.pdf` is followed by `.svg`, not a boundary.
+    expect(
+      extractPdfUrlFromHtml(`<img src="https://cdn.tld/sprite.pdf.svg">`),
+    ).toBeNull();
+  });
+
+  it("does not match a .pdf inside a query string", () => {
+    expect(
+      extractPdfUrlFromHtml(
+        `<script src="https://sci-hub.ru/misc/libgen.js?v=2.pdf"></script>`,
+      ),
+    ).toBeNull();
+  });
+
+  it("preserves a query string on a real pdf url", () => {
+    expect(extractPdfUrlFromHtml(`x = '/storage/x/p.pdf?download=1'`)).toBe(
+      "/storage/x/p.pdf?download=1",
+    );
+  });
+
+  it("falls back to an absolute pdf when there is no storage path", () => {
+    const html = `<script>var u="https://host.tld/abs.pdf"</script>`;
     expect(extractPdfUrlFromHtml(html)).toBe("https://host.tld/abs.pdf");
   });
 
@@ -114,6 +140,19 @@ describe("resolvePdfUrl", () => {
   it("leaves an absolute https URL intact (minus fragment)", () => {
     expect(resolvePdfUrl("https://host.tld/x.pdf#a", page)).toBe(
       "https://host.tld/x.pdf",
+    );
+  });
+
+  it("keeps a query string while resolving a relative path", () => {
+    expect(resolvePdfUrl("/storage/x/p.pdf?download=1", page)).toBe(
+      "https://sci-hub.ru/storage/x/p.pdf?download=1",
+    );
+  });
+
+  it("resolves a relative path that merely starts with 'http'", () => {
+    // Not a scheme — must still be treated as relative.
+    expect(resolvePdfUrl("httpfile.pdf", page)).toBe(
+      "https://sci-hub.ru/httpfile.pdf",
     );
   });
 });

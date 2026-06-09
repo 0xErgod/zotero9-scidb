@@ -128,7 +128,14 @@ export class SciDBManager {
     url: string,
     item: Zotero.Item,
     progressWin: any,
+    depth = 0,
   ): Promise<void> {
+    // Guard the iframe/redirect recursion below against a page that embeds an
+    // iframe pointing back at itself (or a chain of them).
+    if (depth > 3) {
+      throw new PdfNotFoundError(`Too many redirects resolving ${url}`);
+    }
+
     progressWin.changeLine({
       text: `Fetching PDF for "${item.getField("title")}"...`,
       type: "default",
@@ -154,7 +161,7 @@ export class SciDBManager {
       if (iframeSrc) {
         Zotero.debug(`Found iframe source: ${iframeSrc}`);
         // Make a new request to the sci-hub URL
-        return this.updateItem(iframeSrc, item, progressWin);
+        return this.updateItem(iframeSrc, item, progressWin, depth + 1);
       }
     }
 
