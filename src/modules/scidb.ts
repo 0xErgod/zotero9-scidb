@@ -1,4 +1,5 @@
 import {
+  downloadFailureMessage,
   extractPdfUrl,
   isPdfNotAvailable,
   looksLikePdf,
@@ -99,7 +100,8 @@ export class SciDBManager {
         } else {
           // Some other error was thrown during the scrape. Surface the real
           // reason (HTTP status, network error, attachment failure, ...) so
-          // failures aren't silently misattributed to a captcha.
+          // failures aren't silently misattributed. A 403 specifically means a
+          // captcha/login gate (see `downloadFailureMessage`).
           const detail =
             error?.status !== undefined
               ? `HTTP ${error.status}`
@@ -108,9 +110,11 @@ export class SciDBManager {
             `[SciDB] download failed for "${item.getField("title")}": ${detail}`,
           );
           Zotero.debug(error);
-          const message = `Could not auto-download "${item.getField("title")}" (${detail}). Opening in browser...`;
           progressWin.changeLine({
-            text: message,
+            text: downloadFailureMessage(
+              item.getField("title") as string,
+              error,
+            ),
             type: "fail",
           });
           const currentDoi = item.getField("DOI") as string;

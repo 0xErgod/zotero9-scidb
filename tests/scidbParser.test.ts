@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  downloadFailureMessage,
   extractPdfUrl,
   extractPdfUrlFromHtml,
   isPdfNotAvailable,
@@ -179,6 +180,31 @@ describe("isPdfNotAvailable", () => {
     expect(isPdfNotAvailable("<div class='pdf'><object></object></div>")).toBe(
       false,
     );
+  });
+});
+
+describe("downloadFailureMessage", () => {
+  it("gives a captcha-specific message for HTTP 403", () => {
+    const msg = downloadFailureMessage("My Paper", { status: 403 });
+    expect(msg).toContain("My Paper");
+    expect(msg).toContain("captcha");
+    expect(msg).toContain("403");
+  });
+
+  it("reports the HTTP status for other status codes", () => {
+    const msg = downloadFailureMessage("P", { status: 500 });
+    expect(msg).toContain("HTTP 500");
+    expect(msg).not.toContain("captcha");
+  });
+
+  it("falls back to the error message when there is no status", () => {
+    expect(downloadFailureMessage("P", { message: "network down" })).toContain(
+      "network down",
+    );
+  });
+
+  it("handles a null/undefined error", () => {
+    expect(downloadFailureMessage("P", null)).toContain("unknown error");
   });
 });
 
