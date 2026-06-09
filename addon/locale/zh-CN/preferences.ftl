@@ -1,5 +1,5 @@
-pref-title = 插件模板设置示例
+pref-title = SciDB 下载器设置
 pref-enable =
-    .label = 开启
-pref-input = 输入
-pref-help = { $name } Build { $version } { $time }
+    .label = 启用
+pref-endpoint = SciDB 端点 URL
+pref-help = { $name } 构建 { $version } { $time }
