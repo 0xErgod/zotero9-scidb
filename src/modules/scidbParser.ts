@@ -123,6 +123,28 @@ export function isPdfNotAvailable(html: string | null | undefined): boolean {
 }
 
 /**
+ * Build the user-facing failure message for a download error.
+ *
+ * A 403 from Sci-Hub means the file is gated behind a captcha/login that an
+ * automated request can't satisfy, so it gets a specific hint pointing the user
+ * to the browser. Everything else reports the raw reason (HTTP status or
+ * message) so failures aren't misattributed.
+ */
+export function downloadFailureMessage(
+  title: string,
+  err: { status?: number; message?: string } | null | undefined,
+): string {
+  if (err?.status === 403) {
+    return `"${title}" is behind a captcha or login on SciDB (HTTP 403). Opening in browser so you can fetch it manually...`;
+  }
+  const detail =
+    err?.status !== undefined
+      ? `HTTP ${err.status}`
+      : err?.message || "unknown error";
+  return `Could not auto-download "${title}" (${detail}). Opening in browser...`;
+}
+
+/**
  * A genuine PDF payload begins with the `%PDF` magic bytes. Used to reject
  * HTML/captcha pages that Sci-Hub sometimes serves at a `/storage/` URL, so we
  * never attach them to an item as a `.pdf`.
